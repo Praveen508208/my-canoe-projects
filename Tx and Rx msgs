@@ -1,0 +1,35 @@
+Python code for receiving and transmitting msgs using pycharm
+
+import can
+
+def main():
+    tx_bus = can.Bus(interface='virtual', channel=0)
+    rx_bus = can.Bus(interface='virtual', channel=0)
+
+    messages = [
+        can.Message(arbitration_id=0x100, data=[0x01, 0x02], is_extended_id=False),
+        can.Message(arbitration_id=0x200, data=[0xAA, 0xBB, 0xCC], is_extended_id=False),
+        can.Message(arbitration_id=0x300, data=[0xFF], is_extended_id=False),
+    ]
+
+    for msg in messages:
+        try:
+            tx_bus.send(msg)
+            print(f"Sent message with ID: {hex(msg.arbitration_id)}")
+        except can.CanError as e:
+            print(f"Failed to send message {hex(msg.arbitration_id)}: {e}")
+
+    print("\nReceiving messages...")
+
+    for _ in messages:
+        received_msg = rx_bus.recv(timeout=1.0)
+        if received_msg:
+            print(f"Received ID: {hex(received_msg.arbitration_id)}, Data: {list(received_msg.data)}")
+        else:
+            print("No message received")
+
+    tx_bus.shutdown()
+    rx_bus.shutdown()
+
+if __name__ == "__main__":
+    main()
